@@ -132,6 +132,26 @@ func TestErrorFormatter(t *testing.T) {
 			"\n    and the 12 monkeys" +
 			"\n    are laughing",
 	}, {
+		err:  &oneNewline{nil},
+		fmt:  "%+v",
+		want: "123",
+	}, {
+		err: &oneNewline{&oneNewline{nil}},
+		fmt: "%+v",
+		want: "123:" +
+			"\n  - 123",
+	}, {
+		err:  &newlineAtEnd{nil},
+		fmt:  "%+v",
+		want: "newlineAtEnd:\n    detail",
+	}, {
+		err: &newlineAtEnd{&newlineAtEnd{nil}},
+		fmt: "%+v",
+		want: "newlineAtEnd:" +
+			"\n    detail" +
+			"\n  - newlineAtEnd:" +
+			"\n    detail",
+	}, {
 		err: framed,
 		fmt: "%+v",
 		want: "something:" +
@@ -302,7 +322,7 @@ func TestErrorFormatter(t *testing.T) {
 			var ok bool
 			if tc.regexp {
 				var err error
-				ok, err = regexp.MatchString(tc.want, got)
+				ok, err = regexp.MatchString(tc.want+"$", got)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -418,6 +438,42 @@ func (e spurious) FormatError(p xerrors.Printer) (next error) {
 		p.Print("\n", string(e)) // print extraneous leading newline
 	}
 	return nil
+}
+
+type oneNewline struct {
+	next error
+}
+
+func (e *oneNewline) Error() string { return fmt.Sprint(e) }
+
+func (e *oneNewline) Format(s fmt.State, verb rune) {
+	xerrors.FormatError(e, s, verb)
+}
+
+func (e *oneNewline) FormatError(p xerrors.Printer) (next error) {
+	p.Print("1")
+	p.Print("2")
+	p.Print("3")
+	p.Detail()
+	p.Print("\n")
+	return e.next
+}
+
+type newlineAtEnd struct {
+	next error
+}
+
+func (e *newlineAtEnd) Error() string { return fmt.Sprint(e) }
+
+func (e *newlineAtEnd) Format(s fmt.State, verb rune) {
+	xerrors.FormatError(e, s, verb)
+}
+
+func (e *newlineAtEnd) FormatError(p xerrors.Printer) (next error) {
+	p.Print("newlineAtEnd")
+	p.Detail()
+	p.Print("detail\n")
+	return e.next
 }
 
 type adapted struct {

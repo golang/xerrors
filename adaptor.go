@@ -70,8 +70,6 @@ func FormatError(f Formatter, s fmt.State, verb rune) {
 
 loop:
 	for {
-		p.inDetail = false
-
 		switch v := err.(type) {
 		case Formatter:
 			err = v.FormatError((*printer)(p))
@@ -85,15 +83,13 @@ loop:
 		if err == nil {
 			break
 		}
-		if !p.inDetail || !p.printDetail {
+		if p.needColon || !p.printDetail {
 			p.buf.WriteByte(':')
-		}
-		// Strip last newline of detail.
-		if bytes.HasSuffix(p.buf.Bytes(), detailSep) {
-			p.buf.Truncate(p.buf.Len() - len(detailSep))
+			p.needColon = false
 		}
 		p.buf.WriteString(sep)
 		p.inDetail = false
+		p.needNewline = false
 	}
 
 exit:
@@ -135,6 +131,7 @@ type state struct {
 
 	printDetail bool
 	inDetail    bool
+	needColon   bool
 	needNewline bool
 }
 
@@ -143,24 +140,32 @@ func (s *state) Write(b []byte) (n int, err error) {
 		if len(b) == 0 {
 			return 0, nil
 		}
-		if s.inDetail && s.needNewline {
-			s.needNewline = false
-			s.buf.WriteByte(':')
-			s.buf.Write(detailSep)
+		if s.inDetail && s.needColon {
+			s.needNewline = true
 			if b[0] == '\n' {
 				b = b[1:]
 			}
 		}
 		k := 0
 		for i, c := range b {
+			if s.needNewline {
+				if s.inDetail && s.needColon {
+					s.buf.WriteByte(':')
+					s.needColon = false
+				}
+				s.buf.Write(detailSep)
+				s.needNewline = false
+			}
 			if c == '\n' {
 				s.buf.Write(b[k:i])
-				s.buf.Write(detailSep)
 				k = i + 1
+				s.needNewline = true
 			}
 		}
 		s.buf.Write(b[k:])
-		s.needNewline = !s.inDetail
+		if !s.inDetail {
+			s.needColon = true
+		}
 	} else if !s.inDetail {
 		s.buf.Write(b)
 	}
