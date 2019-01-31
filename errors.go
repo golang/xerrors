@@ -4,6 +4,8 @@
 
 package xerrors
 
+import "fmt"
+
 // errorString is a trivial implementation of error.
 type errorString struct {
 	s     string
@@ -21,6 +23,8 @@ func New(text string) error {
 func (e *errorString) Error() string {
 	return e.s
 }
+
+func (e *errorString) Format(s fmt.State, v rune) { FormatError(e, s, v) }
 
 func (e *errorString) FormatError(p Printer) (next error) {
 	p.Print(e.s)

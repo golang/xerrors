@@ -6,6 +6,7 @@ package xerrors_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"golang.org/x/xerrors"
@@ -31,6 +32,18 @@ func TestErrorMethod(t *testing.T) {
 	err := xerrors.New("abc")
 	if err.Error() != "abc" {
 		t.Errorf(`New("abc").Error() = %q, want %q`, err.Error(), "abc")
+	}
+}
+
+func TestNewDetail(t *testing.T) {
+	got := fmt.Sprintf("%+v", xerrors.New("error"))
+	want := `(?s)error:.+errors_test.go:\d+`
+	ok, err := regexp.MatchString(want, got)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !ok {
+		t.Errorf(`fmt.Sprintf("%%+v", New("error")) = %q, want %q"`, got, want)
 	}
 }
 
