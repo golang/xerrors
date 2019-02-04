@@ -68,9 +68,10 @@ func Is(err, target error) bool {
 }
 
 // As finds the first error in err's chain that matches the type to which target
-// points, and if so, sets the target to its value and and returns true. An error
-// matches a type if it is of the same type, or if it has a method As(interface{}) bool
-// such that As(target) returns true. As will panic if target is nil or not a pointer.
+// points, and if so, sets the target to its value and returns true. An error
+// matches a type if it is assignable to the target type, or if it has a method
+// As(interface{}) bool such that As(target) returns true. As will panic if target
+// is nil or not a pointer.
 //
 // The As method should set the target to its value and return true if err
 // matches the type to which target points.
@@ -84,7 +85,7 @@ func As(err error, target interface{}) bool {
 	}
 	targetType := typ.Elem()
 	for {
-		if reflect.TypeOf(err) == targetType {
+		if reflect.TypeOf(err).AssignableTo(targetType) {
 			reflect.ValueOf(target).Elem().Set(reflect.ValueOf(err))
 			return true
 		}

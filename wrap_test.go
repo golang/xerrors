@@ -80,6 +80,7 @@ func (p *poser) As(err interface{}) bool {
 func TestAs(t *testing.T) {
 	var errT errorT
 	var errP *os.PathError
+	var timeout interface{ Timeout() bool }
 	var p *poser
 	_, errF := os.Open("non-existing")
 
@@ -120,16 +121,24 @@ func TestAs(t *testing.T) {
 		&p,
 		true,
 	}, {
-		&poser{"oo", nil},
-		&errF,
+		xerrors.New("err"),
+		&timeout,
 		false,
+	}, {
+		errF,
+		&timeout,
+		true,
+	}, {
+		xerrors.Errorf("path error: %w", errF),
+		&timeout,
+		true,
 	}}
-	for _, tc := range testCases {
-		name := fmt.Sprintf("As(Errorf(..., %v), %v)", tc.err, tc.target)
+	for i, tc := range testCases {
+		name := fmt.Sprintf("%d:As(Errorf(..., %v), %v)", i, tc.err, tc.target)
 		t.Run(name, func(t *testing.T) {
 			match := xerrors.As(tc.err, tc.target)
 			if match != tc.match {
-				t.Fatalf("match: got %v; want %v", match, tc.match)
+				t.Fatalf("xerrors.As(%T, %T): got %v; want %v", tc.err, tc.target, match, tc.match)
 			}
 			if !match {
 				return
