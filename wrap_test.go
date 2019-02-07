@@ -150,6 +150,27 @@ func TestAs(t *testing.T) {
 	}
 }
 
+func TestAsValidation(t *testing.T) {
+	testCases := []interface{}{
+		nil,
+		(*int)(nil),
+		"error",
+	}
+	err := xerrors.New("error")
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%T(%v)", tc, tc), func(t *testing.T) {
+			defer func() {
+				recover()
+			}()
+			if xerrors.As(err, tc) {
+				t.Errorf("As(err, %T(%v)) = true, want false", tc, tc)
+				return
+			}
+			t.Errorf("As(err, %T(%v)) did not panic", tc, tc)
+		})
+	}
+}
+
 func TestUnwrap(t *testing.T) {
 	err1 := xerrors.New("1")
 	erra := xerrors.Errorf("wrap 2: %w", err1)
