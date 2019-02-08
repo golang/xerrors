@@ -56,6 +56,34 @@ func TestIs(t *testing.T) {
 	}
 }
 
+func TestIsOneOf(t *testing.T) {
+	err1 := xerrors.New("1")
+	erra := xerrors.Errorf("wrap 2: %w", err1)
+	erro := xerrors.Opaque(err1)
+
+	poser := &poser{"either 1 or a", func(err error) bool {
+		return err == err1 || err == erra
+	}}
+
+	testCases := []struct {
+		errs   []error
+		target error
+		match  bool
+	}{
+		{[]error{nil, err1}, nil, true},
+		{[]error{err1, erro}, nil, false},
+		{[]error{erra, erro, err1, nil}, err1, true},
+		{[]error{poser, erra}, err1, true},
+	}
+	for _, tc := range testCases {
+		t.Run("", func(t *testing.T) {
+			if got := xerrors.IsOneOf(tc.errs, tc.target); got != tc.match {
+				t.Errorf("Is(%v, %v) = %v, want %v", tc.errs, tc.target, got, tc.match)
+			}
+		})
+	}
+}
+
 type poser struct {
 	msg string
 	f   func(error) bool

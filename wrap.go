@@ -67,6 +67,24 @@ func Is(err, target error) bool {
 	}
 }
 
+// IsOneOf reports whether any error in the provided slice of errors matches the target.
+// IsOneOf looks at the entire error chain for each error and compares against the provided target.
+//
+// An error is considered to match a target if it is equal to that target or if
+// it implements a method Is(error) bool such that Is(target) returns true.
+func IsOneOf(errs []error, target error) bool {
+	isOneOf := false
+
+	for _, err := range errs {
+		if Is(err, target) {
+			isOneOf = true
+			break
+		}
+	}
+
+	return isOneOf
+}
+
 // As finds the first error in err's chain that matches the type to which target
 // points, and if so, sets the target to its value and returns true. An error
 // matches a type if it is assignable to the target type, or if it has a method
