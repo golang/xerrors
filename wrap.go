@@ -71,7 +71,7 @@ func Is(err, target error) bool {
 // points, and if so, sets the target to its value and returns true. An error
 // matches a type if it is assignable to the target type, or if it has a method
 // As(interface{}) bool such that As(target) returns true. As will panic if target
-// is nil or not a pointer.
+// is not a non-nil pointer to a type which implements error or is of interface type.
 //
 // The As method should set the target to its value and return true if err
 // matches the type to which target points.
@@ -83,6 +83,9 @@ func As(err error, target interface{}) bool {
 	typ := val.Type()
 	if typ.Kind() != reflect.Ptr || val.IsNil() {
 		panic("errors: target must be a non-nil pointer")
+	}
+	if e := typ.Elem(); e.Kind() != reflect.Interface && !e.Implements(errorType) {
+		panic("errors: *target must be interface or implement error")
 	}
 	targetType := typ.Elem()
 	for {
@@ -98,3 +101,5 @@ func As(err error, target interface{}) bool {
 		}
 	}
 }
+
+var errorType = reflect.TypeOf((*error)(nil)).Elem()

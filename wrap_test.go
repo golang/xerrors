@@ -151,10 +151,12 @@ func TestAs(t *testing.T) {
 }
 
 func TestAsValidation(t *testing.T) {
+	var s string
 	testCases := []interface{}{
 		nil,
 		(*int)(nil),
 		"error",
+		&s,
 	}
 	err := xerrors.New("error")
 	for _, tc := range testCases {
