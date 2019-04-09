@@ -30,6 +30,7 @@ func TestIs(t *testing.T) {
 		match  bool
 	}{
 		{nil, nil, true},
+		{nil, err1, false},
 		{err1, nil, false},
 		{err1, err1, true},
 		{erra, err1, true},
@@ -89,6 +90,10 @@ func TestAs(t *testing.T) {
 		target interface{}
 		match  bool
 	}{{
+		nil,
+		&errP,
+		false,
+	}, {
 		xerrors.Errorf("pittied the fool: %w", errorT{}),
 		&errT,
 		true,
