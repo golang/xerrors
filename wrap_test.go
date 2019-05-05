@@ -47,6 +47,12 @@ func TestIs(t *testing.T) {
 		{poser, errb, false},
 		{poser, erro, false},
 		{poser, errco, false},
+		{errorUncomparable{}, errorUncomparable{}, true},
+		{errorUncomparable{}, &errorUncomparable{}, false},
+		{&errorUncomparable{}, errorUncomparable{}, true},
+		{&errorUncomparable{}, &errorUncomparable{}, false},
+		{errorUncomparable{}, err1, false},
+		{&errorUncomparable{}, err1, false},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
@@ -237,3 +243,16 @@ type errWrap struct{ error }
 func (errWrap) Error() string { return "wrapped" }
 
 func (errWrap) Unwrap() error { return nil }
+
+type errorUncomparable struct {
+	f []string
+}
+
+func (errorUncomparable) Error() string {
+	return "uncomparable error"
+}
+
+func (errorUncomparable) Is(target error) bool {
+	_, ok := target.(errorUncomparable)
+	return ok
+}
