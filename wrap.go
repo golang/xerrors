@@ -52,7 +52,7 @@ func Is(err, target error) bool {
 		return err == target
 	}
 
-	isComparable := target == nil || reflect.TypeOf(target).Comparable()
+	isComparable := reflect.TypeOf(target).Comparable()
 	for {
 		if isComparable && err == target {
 			return true
