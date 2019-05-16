@@ -7,6 +7,7 @@ package xerrors_test
 import (
 	"fmt"
 	"io"
+	"os"
 	"path"
 	"reflect"
 	"regexp"
@@ -90,7 +91,7 @@ func TestErrorFormatter(t *testing.T) {
 		nonascii = &wrapped{"café", nil}
 		newline  = &wrapped{"msg with\nnewline",
 			&wrapped{"and another\none", nil}}
-		fallback  = &wrapped{"fallback", xerrors.New("file does not exist")}
+		fallback  = &wrapped{"fallback", os.ErrNotExist}
 		oldAndNew = &wrapped{"new style", formatError("old style")}
 		framed    = &withFrameAndMore{
 			frame: xerrors.Caller(0),
@@ -105,13 +106,6 @@ func TestErrorFormatter(t *testing.T) {
 		want   string
 		regexp bool
 	}{{
-		err: xerrors.New("foo"),
-		fmt: "%+v",
-		want: "foo:" +
-			"\n    golang.org/x/xerrors_test.TestErrorFormatter" +
-			"\n        .+/golang.org/x/xerrors/fmt_test.go:1\\d\\d",
-		regexp: true,
-	}, {
 		err:  simple,
 		fmt:  "%s",
 		want: "simple",
@@ -162,7 +156,7 @@ func TestErrorFormatter(t *testing.T) {
 		fmt: "%+v",
 		want: "something:" +
 			"\n    golang.org/x/xerrors_test.TestErrorFormatter" +
-			"\n        .+/fmt_test.go:9\\d" +
+			"\n        .+/fmt_test.go:97" +
 			"\n    something more",
 		regexp: true,
 	}, {
@@ -179,10 +173,7 @@ func TestErrorFormatter(t *testing.T) {
 		// Note: no colon after the last error, as there are no details.
 		want: "fallback:" +
 			"\n    somefile.go:123" +
-			"\n  - file does not exist:" +
-			"\n    golang.org/x/xerrors_test.TestErrorFormatter" +
-			"\n        .+/golang.org/x/xerrors/fmt_test.go:9\\d",
-		regexp: true,
+			"\n  - file does not exist",
 	}, {
 		err:  opaque,
 		fmt:  "%s",
@@ -290,12 +281,12 @@ func TestErrorFormatter(t *testing.T) {
 		err:  simple,
 		fmt:  "%T",
 		want: "*xerrors_test.wrapped",
-		// }, {
-		// 	// The behavior for this case is different between go1.12 and go1.13.
-		// 	err:  simple,
-		// 	fmt:  "%🤪",
-		// 	want: "%!🤪(*xerrors_test.wrapped=&{simple <nil>})", // go1.12
-		// 	want: "&{%!🤪(string=simple) <nil>}",                // go1.13
+	}, {
+		err:  simple,
+		fmt:  "%🤪",
+		want: "%!🤪(*xerrors_test.wrapped)",
+		// For 1.13:
+		//  want: "%!🤪(*xerrors_test.wrapped=&{simple <nil>})",
 	}, {
 		err:  formatError("use fmt.Formatter"),
 		fmt:  "%#v",
