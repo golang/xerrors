@@ -395,7 +395,7 @@ var _ xerrors.Formatter = detailed{}
 
 type detailed struct{}
 
-func (e detailed) Error() string { return fmt.Sprint(e) }
+func (e detailed) Error() string { panic("should have called FormatError") }
 
 func (detailed) FormatError(p xerrors.Printer) (next error) {
 	p.Printf("out of %s", "peanuts")
