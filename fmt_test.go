@@ -485,7 +485,7 @@ type adapted struct {
 	err error
 }
 
-func (e adapted) Error() string { return string(e.msg) }
+func (e adapted) Error() string { return e.msg }
 
 func (e adapted) Format(s fmt.State, verb rune) {
 	xerrors.FormatError(e, s, verb)
