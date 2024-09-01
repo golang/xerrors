@@ -5,6 +5,7 @@
 package xerrors_test
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -82,6 +83,20 @@ func (p *poser) As(err interface{}) bool {
 		return false
 	}
 	return true
+}
+
+func TestErrorsIs(t *testing.T) {
+	var errSentinel = errors.New("sentinel")
+
+	got := errors.Is(xerrors.Errorf("%w", errSentinel), errSentinel)
+	if !got {
+		t.Error("got false, want true")
+	}
+
+	got = errors.Is(xerrors.Errorf("%w: %s", errSentinel, "foo"), errSentinel)
+	if !got {
+		t.Error("got false, want true")
+	}
 }
 
 func TestAs(t *testing.T) {
