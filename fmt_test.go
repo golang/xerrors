@@ -555,14 +555,14 @@ type panicValue struct{}
 
 func (panicValue) String() string { panic("panic") }
 
-var rePath = regexp.MustCompile(`( [^ ]*)xerrors.*test\.`)
-var reLine = regexp.MustCompile(":[0-9]*\n?$")
+var rePath = regexp.MustCompile(`( [^ ]+)\/(xerrors_test|fmt_test)\.`)
+var reLine = regexp.MustCompile(":[0-9]+\n?$")
 
 func cleanPath(s string) string {
 	s = rePath.ReplaceAllString(s, "/path.")
 	s = reLine.ReplaceAllString(s, ":xxx")
-	s = strings.Replace(s, "\n   ", "", -1)
-	s = strings.Replace(s, " /", "/", -1)
+	s = strings.ReplaceAll(s, "\n   ", "")
+	s = strings.ReplaceAll(s, " /", "/")
 	return s
 }
 
