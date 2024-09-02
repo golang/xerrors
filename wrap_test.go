@@ -71,7 +71,7 @@ type poser struct {
 
 func (p *poser) Error() string     { return p.msg }
 func (p *poser) Is(err error) bool { return p.f(err) }
-func (p *poser) As(err interface{}) bool {
+func (p *poser) As(err any) bool {
 	switch x := err.(type) {
 	case **poser:
 		*x = p
@@ -108,7 +108,7 @@ func TestAs(t *testing.T) {
 
 	testCases := []struct {
 		err    error
-		target interface{}
+		target any
 		match  bool
 	}{{
 		nil,
@@ -178,7 +178,7 @@ func TestAs(t *testing.T) {
 
 func TestAsValidation(t *testing.T) {
 	var s string
-	testCases := []interface{}{
+	testCases := []any{
 		nil,
 		(*int)(nil),
 		"error",

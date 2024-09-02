@@ -527,10 +527,10 @@ func (e formatError) GoString() string {
 
 type fmtTwiceErr struct {
 	format string
-	args   []interface{}
+	args   []any
 }
 
-func fmtTwice(format string, a ...interface{}) error {
+func fmtTwice(format string, a ...any) error {
 	return fmtTwiceErr{format, a}
 }
 
@@ -588,11 +588,11 @@ type testPrinter struct {
 	str string
 }
 
-func (p *testPrinter) Print(a ...interface{}) {
+func (p *testPrinter) Print(a ...any) {
 	p.str += fmt.Sprint(a...)
 }
 
-func (p *testPrinter) Printf(format string, a ...interface{}) {
+func (p *testPrinter) Printf(format string, a ...any) {
 	p.str += fmt.Sprintf(format, a...)
 }
 
